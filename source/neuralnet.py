@@ -6,7 +6,7 @@ class CNN(object):
 
     def __init__(self, height, width, channel, num_class, ksize, learning_rate=1e-3, ckpt_dir='./Checkpoint'):
 
-        print("\nInitializing Short-ResNet...")
+        print("\nInitializing Short-ResNet with Network-in-Network Module...")
         self.height, self.width, self.channel, self.num_class = height, width, channel, num_class
         self.ksize, self.learning_rate = ksize, learning_rate
         self.ckpt_dir = ckpt_dir
@@ -75,15 +75,15 @@ class CNN(object):
         conv1_pool = self.customlayers.maxpool(conv1_act, pool_size=2, stride_size=2)
 
         conv2_1 = self.residual(conv1_pool, \
-            ksize=self.ksize, inchannel=16, outchannel=32, expansion=True, name="conv2_1", verbose=verbose)
+            ksize=self.ksize, inchannel=16, outchannel=32, name="conv2_1", verbose=verbose)
         conv2_2 = self.residual(conv2_1, \
-            ksize=self.ksize, inchannel=32, outchannel=32, expansion=True, name="conv2_2", verbose=verbose)
+            ksize=self.ksize, inchannel=32, outchannel=32, name="conv2_2", verbose=verbose)
         conv2_pool = self.customlayers.maxpool(conv2_2, pool_size=2, stride_size=2)
 
         conv3_1 = self.residual(conv2_pool, \
-            ksize=self.ksize, inchannel=32, outchannel=64, expansion=False, name="conv3_1", verbose=verbose)
+            ksize=self.ksize, inchannel=32, outchannel=64, name="conv3_1", verbose=verbose)
         conv3_2 = self.residual(conv3_1, \
-            ksize=self.ksize, inchannel=64, outchannel=self.num_class, expansion=False, name="conv3_2", verbose=verbose)
+            ksize=self.ksize, inchannel=64, outchannel=self.num_class, name="conv3_2", verbose=verbose)
 
         output = tf.reduce_mean(conv3_2, axis=(1, 2))
 
@@ -116,7 +116,7 @@ class CNN(object):
 
         return output
 
-    def residual(self, input, ksize, inchannel, outchannel, expansion=False, name="", verbose=False):
+    def residual(self, input, ksize, inchannel, outchannel, name="", verbose=False):
 
         channels = [inchannel, outchannel*2, outchannel*2, outchannel]
         convtmp_1 = self.ninconv(input=input, ksize=ksize, channels=channels, name="%s_1" %(name))
